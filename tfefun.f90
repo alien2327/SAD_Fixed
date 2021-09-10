@@ -1135,7 +1135,7 @@ module efun
       LOOP_I: do i = isp1 + 1, isp
         k1 = dtastk(i)
 12       if (ktflistq(k1, kl1)) then
-          klh = >kl1
+          klh => kl1
           k1 = kl1%head
           do while(ktflistq(k1, kl1))
             k1 = kl1%head
@@ -1152,7 +1152,7 @@ module efun
         end if
         if (ktfsymbolq(k1, sym1)) then
           if (sym1%override == 0) then
-            sym1 = >tfsydef(sym1)
+            sym1 => tfsydef(sym1)
           end if
           call sym_symdef(sym1, symd)
           if (symd%upval .ne. 0) then
@@ -1176,7 +1176,7 @@ module efun
         ktastk(isp) = ktfoper + mtfnull
       end if
       k = dtastk(isp)
-      id = iget_fun_id(ka1)
+      id = iget_fun_id(int(ka1, kind=8))
       irtc = -1
       go to (110,  120,  130,  140,  150,  160,  170,  180,  190,  200,  &
             210,  220,  230,  240,  240,  260,  270,  280,  290,  300, &
@@ -1391,15 +1391,13 @@ module efun
       end if
       go to 6900
 360    if (narg == 1) then
-        kx = tfeintf(tacosh, tcacosh, k, .true., 1.d0, dinfinity, 
-   $         irtc)
+        kx = tfeintf(tacosh, tcacosh, k, .true., 1.d0, dinfinity, irtc)
       else
         go to 6811
       end if
       go to 6900
 370    if (narg == 1) then
-        kx = tfeintf(tatanh, tcatanh, k, .true., -1.d0, 1.d0, 
-   $         irtc)
+        kx = tfeintf(tatanh, tcatanh, k, .true., -1.d0, 1.d0, irtc)
       else
         go to 6811
       end if
@@ -1422,7 +1420,7 @@ module efun
         irtc = itfmessage(9, 'General::wrongtype', '"Real number"')
       else
         ka = int8(rtastk(isp1 + 1))
-        if (f == 0.d0 .and. .not. tfchecklastp(ka)) then
+        if (f == 0.d0 .and. .not. tfchecklastp(int(ka, kind=8))) then
           irtc = itfmessage(9, 'General::wrongnum', '"within allocated block"')
         else
           kx = kxadaloc(-1, 4, klx)
@@ -1602,7 +1600,7 @@ module efun
         end if
         go to 6900
       end if
-      kx = dfromr(vx)
+      kx = dfromr(dble(vx))
       go to 8000
 830    if (narg .ne. 1) then
         go to 6811
@@ -2014,7 +2012,7 @@ module efun
       if (irtc .ne. 0) then
         go to 7000
       end if
-      kx = dfromr(dble(max(0, nsize-2)(kind=4)))
+      kx = dfromr(dble(max(0, nsize-2)*4))
       go to 6900
 2300   if (narg .ne. 1) then
          irtc = itfmessage(9, 'General::narg', '"1"')
@@ -2186,7 +2184,7 @@ module efun
       go to 6900
 2590   if (narg == 1) then
         if (ktfrealq(dtastk(isp), v) .and. anint(v) == v) then
-          kx%x(1) = bernbf(nint(v))*factorial(v)
+          kx%x(1) = bernbf(nint(v))*factorial(dble(v))
           irtc = 0
         end if
       else if (narg == 2) then
@@ -2351,9 +2349,9 @@ module efun
       case (mtfincrement, mtfdecrement)
         v1 = merge(1.d0, -1.d0, iaf == mtfincrement)
         if (narg == 1) then
-          kx = tfeval1to(dtastk(isp1 + 1), dfromr(v1), mtfaddto, .true., irtc)
+          kx = tfeval1to(dtastk(isp1 + 1), dfromr(dble(v1)), mtfaddto, .true., irtc)
         else if (narg == 2 .and. ktastk(isp1 + 1) == ktfoper + mtfnull) then
-          kx = tfeval1to(dtastk(isp), dfromr(v1), mtfaddto, .false., irtc)
+          kx = tfeval1to(dtastk(isp), dfromr(dble(v1)), mtfaddto, .false., irtc)
         else
           go to 6811
         end if
@@ -2423,7 +2421,7 @@ module efun
     else if (ktflistq(k1, kl1)) then
       kx = k1
       if (ktfoperq(kl1%head, kop)) then
-        id = iget_fun_id(kop)
+        id = iget_fun_id(int(kop, kind=8))
         select case (id)
         case (-mtffun)
           kx = tfpuref(isp1, kl1, irtc)
@@ -2931,7 +2929,7 @@ module efun
             kx = tfleval(klx, .false., irtc)
           else if (ktfsymbolq(kx, sym)) then
             if (sym%override == 0) then
-              sym = >tfsydef(sym)
+              sym => tfsydef(sym)
               kx = sad_descr(sym)
             end if
           end if
@@ -3057,7 +3055,7 @@ module efun
         end if
       else
         call loc_sym(kaf, sym)
-        sym = >tfsydef(sym)
+        sym => tfsydef(sym)
         kf = sad_descr(sym)
       end if
     case (ktflist)
@@ -3134,8 +3132,8 @@ module efun
       end if
       if (evalh .or. .not. ref) then
         if (tfonstackq(ks) .or. kls%ref .gt. 0) then
-          kls1 = >tfduplist(kls)
-          kls = >kls1
+          kls1 => tfduplist(kls)
+          kls => kls1
         end if
         kls%head%k = ktfoper + iaf
         if (ref .and. tfconstlistqo(kls)) then
